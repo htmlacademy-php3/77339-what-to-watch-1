@@ -2,32 +2,48 @@
 
 namespace App\Http\Responses;
 
-use Symfony\Component\HttpFoundation\Response;
+use Exception;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
-final class ErrorResponse extends BaseResponse
+class ErrorResponse extends BaseResponse
 {
-    public int $statusCode = Response::HTTP_BAD_REQUEST;
+    public function __construct(
+        Exception|string $error,
+        int $statusCode = Response::HTTP_BAD_REQUEST,
+        array $headers = []
+    ) {
+        if ($error instanceof Exception) {
+            $this->logException($error);
+            $message = $error->getMessage();
+            $statusCode = $error->getCode() ?: $statusCode;
+        } else {
+            $message = $error;
+        }
 
-    /**
-     * @param             $data
-     * @param string|null $message
-     * @param int         $statusCode
-     */
-    public function __construct($data, protected ?string $message = null, int $statusCode = Response::HTTP_BAD_REQUEST)
-    {
-        parent::__construct([], $statusCode);
+        parent::__construct($message, $statusCode, $headers);
     }
 
-    /**
-     * Формирование содержимого ответа
-     *
-     * @return array
-     */
-    protected function makeResponseData(): array
+    protected function prepareData(): array
     {
         return [
-            'message' => $this->message,
-            'errors' => $this->prepareData(),
+            'success' => false,
+            'error' => [
+                'message' => $this->data,
+                'code' => $this->statusCode
+            ],
+            'timestamp' => now()->toIso8601String()
         ];
+    }
+
+    protected function logException(Exception $exception): void
+    {
+        Log::error('API Error', [
+            'message' => $exception->getMessage(),
+            'code' => $exception->getCode(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => $exception->getTraceAsString()
+        ]);
     }
 }

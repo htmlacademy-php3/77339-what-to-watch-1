@@ -2,7 +2,7 @@
 
 namespace App\Http\Responses;
 
-final class SuccessResponse extends BaseResponse
+class SuccessResponse extends BaseResponse
 {
     /**
      * Формирование содержимого ответа
@@ -14,5 +14,14 @@ final class SuccessResponse extends BaseResponse
         return $this->data ? [
             'data' => $this->prepareData(),
         ] : null;
+    }
+
+    protected function prepareData(): array
+    {
+        return [
+            'success' => true,
+            'data' => $this->data,
+            'timestamp' => now()->toIso8601String()
+        ];
     }
 }
