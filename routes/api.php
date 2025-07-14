@@ -18,7 +18,14 @@ Route::get('/user', [UserController::class, 'me']);
 Route::patch('/user', [UserController::class, 'update']);
 Route::apiResource('/films', FilmController::class);
 Route::get('/genres', [GenreController::class, 'index']);
-Route::patch('/genres/{genre}', [GenreController::class, 'update']);
+Route::middleware(['moderator'])->group(function () {
+    Route::patch('/films/{film}', [FilmController::class, 'update']);
+    Route::delete('/films/{film}', [FilmController::class, 'destroy']);
+    Route::patch('/genres/{genre}', [GenreController::class, 'update']);
+    Route::patch('/comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+    Route::post('/promo/{id}', [FilmController::class, 'createPromo']);
+});
 Route::get('/favorite', [FavoriteController::class, 'index']);
 Route::post('/films/{id}/favorite', [FavoriteController::class, 'store']);
 Route::delete('/films/{id}/favorite', [FavoriteController::class, 'destroy']);
@@ -28,5 +35,4 @@ Route::post('/comments/{id}', [CommentController::class,  'store']);
 Route::patch('/comments/{comment}', [CommentController::class,  'update']);
 Route::delete('/comments/{comment}', [CommentController::class,  'destroy']);
 Route::get('/promo', [FilmController::class,  'showPromo']);
-Route::post('/promo/{id}', [FilmController::class,  'createPromo']);
 

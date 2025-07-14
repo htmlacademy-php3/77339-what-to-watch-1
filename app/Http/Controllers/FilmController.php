@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
+use App\Models\Film;
 
 class FilmController extends Controller
 {
@@ -52,6 +53,8 @@ class FilmController extends Controller
      */
     public function update(Request $request, int $id) : SuccessResponse
     {
+        $film = Film::findOrFail($id);
+        $this->authorize('edit-resource', $film);
         return $this->success([]);
     }
 
@@ -87,6 +90,20 @@ class FilmController extends Controller
      */
     public function createPromo(Request $request, $film_id) : SuccessResponse
     {
+        return $this->success([]);
+    }
+
+    /**
+     * Удаление фильма
+     *
+     * @param int $id
+     *
+     * @return SuccessResponse
+     */
+    public function destroy(int $id) : SuccessResponse
+    {
+        $film = Film::findOrFail($id);
+        $this->authorize('edit-resource', $film);
         return $this->success([]);
     }
 }
