@@ -43,6 +43,8 @@ class CommentController extends Controller
      */
     public function update(Request $request, string $comment) : SuccessResponse
     {
+        $commentModel = \App\Models\Comment::findOrFail($comment);
+        $this->authorize('edit-resource', $commentModel);
         return $this->success([]);
     }
 
@@ -55,6 +57,8 @@ class CommentController extends Controller
      */
     public function destroy(string $comment) : SuccessResponse
     {
+        $commentModel = \App\Models\Comment::findOrFail($comment);
+        $this->authorize('edit-resource', $commentModel);
         return $this->success([]);
     }
 }

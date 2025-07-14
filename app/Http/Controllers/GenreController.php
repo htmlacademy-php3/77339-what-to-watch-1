@@ -28,6 +28,8 @@ class GenreController extends Controller
      */
     public function update(Request $request, $id) : SuccessResponse
     {
+        $genre = \App\Models\Genre::findOrFail($id);
+        $this->authorize('edit-resource', $genre);
         return $this->success([]);
     }
 }
