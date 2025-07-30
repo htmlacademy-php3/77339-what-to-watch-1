@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use App\Models\Film;
+use App\Jobs\FetchMovie;
 
 class FilmController extends Controller
 {
@@ -106,4 +107,13 @@ class FilmController extends Controller
         $this->authorize('edit-resource', $film);
         return $this->success([]);
     }
+}
+
+public function fetch(Request $request)
+{
+    $imdbId = $request->input('imdb_id');
+
+    FetchAndSaveMovie::dispatch($imdbId);
+
+    return response()->json(['message' => 'Фильм поставлен в очередь']);
 }
