@@ -29,7 +29,6 @@ class FetchAndSaveMovie implements ShouldQueue
             [
                 'title' => $data['Title'],
                 'year' => $data['Year'],
-                'genre' => $data['Genre'],
                 'director' => $data['Director'],
                 'poster_url' => $data['Poster'],
                 'description' => $data['Plot'],
