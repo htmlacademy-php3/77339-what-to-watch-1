@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
+use App\Models\Genre;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class GenreController extends Controller
 {
@@ -15,21 +17,28 @@ class GenreController extends Controller
      */
     public function index() : SuccessResponse
     {
-        return $this->success([]);
+        $genres = Genre::all();
+        return $this->success($genres);
     }
 
     /**
      * Обновление жанров
      *
      * @param Request $request
-     * @param         $id
+     * @param Genre $genre
      *
      * @return SuccessResponse
      */
-    public function update(Request $request, $id) : SuccessResponse
+    public function update(Request $request, Genre $genre) : SuccessResponse
     {
-        $genre = \App\Models\Genre::findOrFail($id);
         $this->authorize('edit-resource', $genre);
-        return $this->success([]);
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
+        
+        $genre->update($validated);
+        
+        return $this->success($genre);
     }
 }
