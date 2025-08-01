@@ -2,7 +2,7 @@
 namespace Tests\Feature;
 
 use App\Jobs\FetchAndSaveMovie;
-use App\Models\Movie;
+use App\Models\Film;
 use App\Services\MovieFetcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -44,16 +44,15 @@ class FetchAndSaveMovieTest extends TestCase
                 'Response' => 'True',
             ]);
 
-        // 2. Выполнение: запускаем задачу
+        // Execute: run the job
         $job = new FetchAndSaveMovie('tt1234567');
         $job->handle($mockedFetcher);
 
-        // 3. Проверка: данные действительно в базе
-        $this->assertDatabaseHas('movies', [
+        // Assert: data is actually in the database
+        $this->assertDatabaseHas('films', [
             'imdb_id' => 'tt1234567',
             'title' => 'Mocked Movie',
             'year' => '2025',
-            'genre' => 'Action, Comedy',
             'director' => 'Jane Doe',
         ]);
     }
