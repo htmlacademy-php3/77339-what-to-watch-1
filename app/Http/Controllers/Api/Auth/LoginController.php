@@ -11,7 +11,7 @@ use App\Http\Responses\ErrorResponse;
 
 class LoginController extends Controller
 {
-    public function login(Request $request): SuccessResponse
+    public function login(Request $request): SuccessResponse|ErrorResponse
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',
