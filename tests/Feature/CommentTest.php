@@ -14,15 +14,12 @@ class CommentTest extends TestCase
 
     public function test_comment_list_returns_correct_structure_and_status()
     {
-        // Create test data
         $film = Film::factory()->create();
         Comment::factory()->count(3)->create(['film_id' => $film->id]);
         $user = User::factory()->create();
         
-        // Make request
         $response = $this->actingAs($user)->getJson("/api/comments/{$film->id}");
         
-        // Assert response
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
@@ -54,7 +51,6 @@ class CommentTest extends TestCase
 
     public function test_comment_create_returns_correct_structure()
     {
-        // Create test data
         $film = Film::factory()->create();
         $user = User::factory()->create();
         $commentData = Comment::factory()->make([
@@ -62,10 +58,8 @@ class CommentTest extends TestCase
             'user_id' => $user->id
         ])->toArray();
         
-        // Make request
         $response = $this->actingAs($user)->postJson("/api/comments/{$film->id}", $commentData);
         
-        // Assert response
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
@@ -121,16 +115,13 @@ class CommentTest extends TestCase
 
     public function test_comment_update_requires_auth_and_returns_correct_status()
     {
-        // Create test data
         $comment = Comment::factory()->create();
         $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
         
-        // Make request
         $response = $this->actingAs($user)->patchJson("/api/comments/{$comment->id}", [
             'content' => 'Updated content',
         ]);
         
-        // Assert response
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
@@ -159,7 +150,7 @@ class CommentTest extends TestCase
         $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
         
         $response = $this->actingAs($user)->patchJson("/api/comments/{$comment->id}", [
-            'content' => '', // Empty content should be invalid
+            'content' => '',
         ]);
         
         $response->assertStatus(422);
@@ -177,14 +168,11 @@ class CommentTest extends TestCase
 
     public function test_comment_delete_requires_auth_and_returns_correct_status()
     {
-        // Create test data
         $comment = Comment::factory()->create();
         $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
         
-        // Make request
         $response = $this->actingAs($user)->deleteJson("/api/comments/{$comment->id}");
         
-        // Assert response
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
@@ -210,14 +198,12 @@ class CommentTest extends TestCase
         $film = Film::factory()->create();
         $user = User::factory()->create();
         
-        // Create parent comment
         $parentComment = Comment::factory()->create([
             'film_id' => $film->id,
             'user_id' => $user->id,
             'comment_id' => null
         ]);
         
-        // Create child comment
         $childComment = Comment::factory()->create([
             'film_id' => $film->id,
             'user_id' => $user->id,

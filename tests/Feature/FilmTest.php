@@ -13,14 +13,11 @@ class FilmTest extends TestCase
 
     public function test_film_list_returns_correct_structure_and_status()
     {
-        // Create test data
         Film::factory()->count(3)->create();
         $user = User::factory()->create();
         
-        // Make request
         $response = $this->actingAs($user)->getJson('/api/films');
         
-        // Assert response
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
@@ -34,23 +31,18 @@ class FilmTest extends TestCase
 
     public function test_film_list_requires_authentication()
     {
-        // Make request without authentication
         $response = $this->getJson('/api/films');
         
-        // Assert response
         $response->assertStatus(401);
     }
 
     public function test_film_show_returns_correct_structure_and_status()
     {
-        // Create test data
         $film = Film::factory()->create();
         $user = User::factory()->create();
         
-        // Make request
         $response = $this->actingAs($user)->getJson("/api/films/{$film->id}");
         
-        // Assert response
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
@@ -73,14 +65,11 @@ class FilmTest extends TestCase
 
     public function test_film_create_returns_201_and_structure()
     {
-        // Create test data
         $user = User::factory()->create();
         $filmData = Film::factory()->make()->toArray();
         
-        // Make request
         $response = $this->actingAs($user)->postJson('/api/films', $filmData);
         
-        // Assert response
         $response->assertStatus(201);
         $response->assertJsonStructure([
             'success',
@@ -124,16 +113,13 @@ class FilmTest extends TestCase
 
     public function test_film_update_requires_auth_and_returns_correct_status()
     {
-        // Create test data
         $film = Film::factory()->create();
         $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
         
-        // Make request
         $response = $this->actingAs($user)->patchJson("/api/films/{$film->id}", [
             'title' => 'Updated Title',
         ]);
         
-        // Assert response
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
@@ -168,14 +154,11 @@ class FilmTest extends TestCase
 
     public function test_film_delete_requires_auth_and_returns_correct_status()
     {
-        // Create test data
         $film = Film::factory()->create();
         $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
         
-        // Make request
         $response = $this->actingAs($user)->deleteJson("/api/films/{$film->id}");
         
-        // Assert response
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
