@@ -38,10 +38,10 @@ class FilmTest extends TestCase
 
     public function test_film_show_returns_correct_structure_and_status()
     {
-        $film = Film::factory()->create();
+        $id = Film::factory()->create();
         $user = User::factory()->create();
-        
-        $response = $this->actingAs($user)->getJson("/api/films/{$film->id}");
+
+        $response = $this->actingAs($user)->getJson("/api/films/{$id->id}");
         
         $response->assertStatus(200);
         $response->assertJsonStructure([

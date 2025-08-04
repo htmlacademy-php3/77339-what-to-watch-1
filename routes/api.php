@@ -29,6 +29,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
     // Genre routes
     Route::get('/genres', [GenreController::class, 'index']);
+    Route::patch('/genres/{genre}', [GenreController::class, 'update']);
     
     // Comment routes
     Route::get('/comments/{id}', [CommentController::class, 'index']);
