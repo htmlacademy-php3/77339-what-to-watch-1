@@ -13,7 +13,6 @@ class FetchAndSaveMovieTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
     public function DispatchMovieFetchJobToQueue()
     {
         Queue::fake();
@@ -27,7 +26,6 @@ class FetchAndSaveMovieTest extends TestCase
         });
     }
 
-    /** @test */
     public function SaveMovieDataFromMockedFetcher()
     {
         $mockedFetcher = Mockery::mock(MovieFetcher::class);
@@ -44,11 +42,9 @@ class FetchAndSaveMovieTest extends TestCase
                 'Response' => 'True',
             ]);
 
-        // Execute: run the job
         $job = new FetchAndSaveMovie('tt1234567');
         $job->handle($mockedFetcher);
 
-        // Assert: data is actually in the database
         $this->assertDatabaseHas('films', [
             'imdb_id' => 'tt1234567',
             'title' => 'Mocked Movie',

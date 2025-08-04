@@ -13,14 +13,11 @@ class GenreTest extends TestCase
 
     public function test_genre_list_returns_correct_structure_and_status()
     {
-        // Create test data
         Genre::factory()->count(3)->create();
         $user = User::factory()->create();
         
-        // Make request
         $response = $this->actingAs($user)->getJson('/api/genres');
         
-        // Assert response
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
@@ -34,10 +31,8 @@ class GenreTest extends TestCase
 
     public function test_genre_list_requires_authentication()
     {
-        // Make request without authentication
         $response = $this->getJson('/api/genres');
         
-        // Assert response
         $response->assertStatus(401);
     }
 
@@ -90,7 +85,7 @@ class GenreTest extends TestCase
         $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
         
         $response = $this->actingAs($user)->patchJson("/api/genres/{$genre->id}", [
-            'name' => '', // Empty name should be invalid
+            'name' => '',
         ]);
         
         $response->assertStatus(422);

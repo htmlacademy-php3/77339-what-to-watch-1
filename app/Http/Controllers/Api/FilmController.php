@@ -16,8 +16,8 @@ class FilmController extends Controller
      */
     public function index() : SuccessResponse
     {
-        $films = Film::all();
-        return $this->success($films);
+        $id = Film::all();
+        return $this->success($id);
     }
 
     /**
@@ -27,7 +27,7 @@ class FilmController extends Controller
      *
      * @return SuccessResponse
      */
-    public function show(Film $film) : SuccessResponse
+    public function show(Film $id) : SuccessResponse
     {
         return $this->success($film);
     }
@@ -59,9 +59,9 @@ class FilmController extends Controller
             'video_preview_url' => 'nullable|url',
         ]);
         
-        $film = Film::create($validated);
+        $id = Film::create($validated);
         
-        return $this->success($film, 201);
+        return $this->success($id, 201);
     }
 
     /**
@@ -72,9 +72,9 @@ class FilmController extends Controller
      *
      * @return SuccessResponse
      */
-    public function update(Request $request, Film $film) : SuccessResponse
+    public function update(Request $request, Film $id) : SuccessResponse
     {
-        $this->authorize('edit-resource', $film);
+        $this->authorize('edit-resource', $id);
         
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
@@ -94,9 +94,9 @@ class FilmController extends Controller
             'video_preview_url' => 'sometimes|nullable|url',
         ]);
         
-        $film->update($validated);
+        $id->update($validated);
         
-        return $this->success($film);
+        return $this->success($id);
     }
 
     /**
@@ -106,9 +106,9 @@ class FilmController extends Controller
      *
      * @return SuccessResponse
      */
-    public function similar(Film $film) : SuccessResponse
+    public function similar(Film $id) : SuccessResponse
     {
-        $similarFilms = Film::where('id', '!=', $film->id)
+        $similarFilms = Film::where('id', '!=', $id->id)
             ->limit(5)
             ->get();
         
@@ -147,11 +147,11 @@ class FilmController extends Controller
      *
      * @return SuccessResponse
      */
-    public function destroy(Film $film) : SuccessResponse
+    public function destroy(Film $id) : SuccessResponse
     {
-        $this->authorize('edit-resource', $film);
+        $this->authorize('edit-resource', $id);
         
-        $film->delete();
+        $id->delete();
         
         return $this->success(['message' => 'Film deleted successfully']);
     }

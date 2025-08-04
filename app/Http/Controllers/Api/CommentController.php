@@ -17,9 +17,9 @@ class CommentController extends Controller
      *
      * @return SuccessResponse
      */
-    public function index(Film $film) : SuccessResponse
+    public function index(Film $id) : SuccessResponse
     {
-        $comments = $film->comments()->with('user')->get();
+        $comments = $id->comments()->with('user')->get();
         
         return $this->success($comments);
     }
@@ -32,7 +32,7 @@ class CommentController extends Controller
      *
      * @return SuccessResponse
      */
-    public function store(Request $request, Film $film) : SuccessResponse
+    public function store(Request $request, Film $id) : SuccessResponse
     {
         $validated = $request->validate([
             'content' => 'required|string|max:1000',
@@ -42,7 +42,7 @@ class CommentController extends Controller
         ]);
         
         $validated['user_id'] = $request->user()->id;
-        $validated['film_id'] = $film->id;
+        $validated['film_id'] = $id->id;
         
         $comment = Comment::create($validated);
         

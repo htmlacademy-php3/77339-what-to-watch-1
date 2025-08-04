@@ -10,8 +10,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CommentFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -20,7 +18,7 @@ class CommentFactory extends Factory
             'content' => $this->faker->sentence(),
             'author' => $this->faker->name(),
             'rate' => $this->faker->numberBetween(1, 10),
-            'comment_id' => null, // For simplicity, no nested comments by default
+            'comment_id' => null,
             'user_id' => \App\Models\User::factory(),
             'film_id' => \App\Models\Film::factory(),
         ];

@@ -22,31 +22,32 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
     // Film routes
     Route::get('/films', [FilmController::class, 'index']);
-    Route::get('/films/{film}', [FilmController::class, 'show']);
+    Route::get('/films/{id}', [FilmController::class, 'show']);
     Route::post('/films', [FilmController::class, 'store']);
-    Route::get('/films/{film}/similar', [FilmController::class, 'similar']);
+    Route::get('/films/{id}/similar', [FilmController::class, 'similar']);
     Route::get('/promo', [FilmController::class, 'showPromo']);
     
     // Genre routes
     Route::get('/genres', [GenreController::class, 'index']);
+    Route::patch('/genres/{genre}', [GenreController::class, 'update']);
     
     // Comment routes
-    Route::get('/comments/{film}', [CommentController::class, 'index']);
-    Route::post('/comments/{film}', [CommentController::class, 'store']);
+    Route::get('/comments/{id}', [CommentController::class, 'index']);
+    Route::post('/comments/{id}', [CommentController::class, 'store']);
     
     // Favorite routes
     Route::get('/favorite', [FavoriteController::class, 'index']);
-    Route::post('/films/{film}/favorite', [FavoriteController::class, 'store']);
-    Route::delete('/films/{film}/favorite', [FavoriteController::class, 'destroy']);
+    Route::post('/films/{id}/favorite', [FavoriteController::class, 'store']);
+    Route::delete('/films/{id}/favorite', [FavoriteController::class, 'destroy']);
     
     // Moderator routes
     Route::middleware(['moderator'])->group(function () {
-        Route::patch('/films/{film}', [FilmController::class, 'update']);
-        Route::delete('/films/{film}', [FilmController::class, 'destroy']);
-        Route::patch('/genres/{genre}', [GenreController::class, 'update']);
+        Route::patch('/films/{id}', [FilmController::class, 'update']);
+        Route::delete('/films/{id}', [FilmController::class, 'destroy']);
+        Route::patch('/genres/{id}', [GenreController::class, 'update']);
         Route::patch('/comments/{comment}', [CommentController::class, 'update']);
         Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
-        Route::post('/promo/{film}', [FilmController::class, 'createPromo']);
+        Route::post('/promo/{id}', [FilmController::class, 'createPromo']);
     });
 });
 
