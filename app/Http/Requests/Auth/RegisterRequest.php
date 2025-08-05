@@ -22,7 +22,7 @@ class RegisterRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8',
         ];
     }
 
@@ -41,7 +41,6 @@ class RegisterRequest extends FormRequest
             'password.required' => 'Пароль обязателен для заполнения',
             'password.string' => 'Пароль должен быть строкой',
             'password.min' => 'Пароль должен содержать минимум 8 символов',
-            'password.confirmed' => 'Пароли не совпадают',
         ];
     }
 } 

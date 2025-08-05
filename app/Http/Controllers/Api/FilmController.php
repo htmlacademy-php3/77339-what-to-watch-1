@@ -29,7 +29,7 @@ class FilmController extends Controller
      */
     public function show(Film $id) : SuccessResponse
     {
-        return $this->success($film);
+        return $this->success($id);
     }
 
     /**
