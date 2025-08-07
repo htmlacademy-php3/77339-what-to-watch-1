@@ -3,18 +3,36 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Responses\SuccessResponse;
+use App\Http\Responses\ErrorResponse;
+use App\Services\Auth\LogoutService;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\TransientToken;
+use Symfony\Component\HttpFoundation\Response;
 
 class LogoutController extends Controller
 {
-    public function logout(Request $request): SuccessResponse
+    public function __construct(protected LogoutService $logoutService)
     {
-        if ($request->user() && !$request->user()->currentAccessToken() instanceof TransientToken) {
-            $request->user()->currentAccessToken()->delete();
+    }
+
+    /**
+     * Выход из системы (удаление всех токенов пользователя)
+     *
+     * @param  Request $request
+     * @return Response|ErrorResponse
+     */
+    public function logout(Request $request): \Illuminate\Http\Response|ErrorResponse|Response
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return new ErrorResponse(
+                message: 'Пользователь не аутентифицирован.',
+                statusCode: Response::HTTP_UNAUTHORIZED
+            );
         }
 
-        return new SuccessResponse(['message' => 'Вы успешно вышли из системы']);
+        $this->logoutService->logoutUser($user);
+
+        return response()->noContent();
     }
 }

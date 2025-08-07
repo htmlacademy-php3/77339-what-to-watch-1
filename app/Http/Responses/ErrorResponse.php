@@ -2,48 +2,45 @@
 
 namespace App\Http\Responses;
 
-use Exception;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Log;
+use AllowDynamicProperties;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Validation\Validator;
+use Override;
+use stdClass;
+use Symfony\Component\HttpFoundation\Response;
 
+#[AllowDynamicProperties]
 class ErrorResponse extends BaseResponse
 {
-    public function __construct(
-        Exception|string $error,
-        int $statusCode = Response::HTTP_BAD_REQUEST,
-        array $headers = []
-    ) {
-        if ($error instanceof Exception) {
-            $this->logException($error);
-            $message = $error->getMessage();
-            $statusCode = $error->getCode() ?: $statusCode;
-        } else {
-            $message = $error;
-        }
+    protected string $message;
+    public int $statusCode = Response::HTTP_BAD_REQUEST;
 
-        parent::__construct($message, $statusCode, $headers);
+    /**
+     * @param string                    $message
+     * @param array|Arrayable|Validator $errors
+     * @param int                       $statusCode
+     */
+    public function __construct(
+        string $message,
+        protected array|Arrayable|Validator $errors = [],
+        int $statusCode = Response::HTTP_BAD_REQUEST,
+    ) {
+        parent::__construct([], $statusCode);
+        $this->message = $message;
+        $this->statusCode = $statusCode;
     }
 
-    protected function prepareData(): array
+    /**
+     * Формирование содержимого ответа
+     *
+     * @return array
+     */
+    #[Override]
+    protected function makeResponseData(): array
     {
         return [
-            'success' => false,
-            'error' => [
-                'message' => $this->data,
-                'code' => $this->statusCode
-            ],
-            'timestamp' => now()->toIso8601String()
+            'message' => $this->message,
+            'errors' => $this->errors ?: new stdClass(),
         ];
-    }
-
-    protected function logException(Exception $exception): void
-    {
-        Log::error('API Error', [
-            'message' => $exception->getMessage(),
-            'code' => $exception->getCode(),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
-            'trace' => $exception->getTraceAsString()
-        ]);
     }
 }

@@ -21,4 +21,10 @@
 /vendor
 Homestead.json
 Homestead.yaml
+npm-debug.log
 Thumbs.db
+yarn-error.log
+/app/Console/Commands/stubs/
+/app/Providers/ConsoleServiceProvider.php
+/app/Console/Commands/MakeServiceCommand.php
+/app/Console/Commands/MakeAndOpenCommand.php

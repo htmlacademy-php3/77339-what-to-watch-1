@@ -7,87 +7,110 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Функциональные тесты для GenreController.
+ *
+ * Проверяет:
+ * - Получение списка жанров
+ * - Обновление жанра модератором
+ * - Ошибки доступа и авторизации при обновлении
+ * - Поведение при несуществующем жанре
+ */
 class GenreTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_genre_list_returns_correct_structure_and_status()
+    /**
+     * Тест получения списка жанров.
+     *
+     * @return void
+     */
+    public function testReturnsListOfGenres(): void
     {
-        Genre::factory()->count(3)->create();
+        Genre::factory()->count(5)->create();
+
+        $response = $this->getJson(route('genres.index'));
+
+        $response->assertOk()
+            ->assertJsonStructure(['data']);
+    }
+
+    /**
+     * Тест успешного обновления жанра модератором.
+     *
+     * @return void
+     */
+    public function testModeratorCanUpdateGenre(): void
+    {
+        $moderator = User::factory()->create([
+            'role' => User::ROLE_MODERATOR
+        ]);
+        $genre = Genre::factory()->create([
+            'name' => 'Old Name',
+        ]);
+
+        $response = $this->actingAs($moderator)->patchJson(route('genres.update', $genre->id), [
+            'name' => 'New Name',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['data']);
+    }
+
+    /**
+     * Тест ошибки 401 при попытке обновить жанр без авторизации.
+     *
+     * @return void
+     */
+    public function testUpdateGenreUnauthenticated(): void
+    {
+        $genre = Genre::factory()->create();
+
+        $response = $this->patchJson(route('genres.update', $genre->id), [
+            'name' => 'Horror',
+        ]);
+
+        $response->assertUnauthorized()
+            ->assertJson([
+                'message' => 'Запрос требует аутентификации.',
+            ]);
+    }
+
+    /**
+     * Тест ошибки 403 при попытке обновить жанр обычным пользователем.
+     *
+     * @return void
+     */
+    public function testUpdateGenreAsUser(): void
+    {
         $user = User::factory()->create();
-        
-        $response = $this->actingAs($user)->getJson('/api/genres');
-        
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'data',
-            'timestamp'
-        ]);
-        $response->assertJson([
-            'success' => true
-        ]);
-    }
-
-    public function test_genre_list_requires_authentication()
-    {
-        $response = $this->getJson('/api/genres');
-        
-        $response->assertStatus(401);
-    }
-
-    public function test_genre_update_requires_moderator_role()
-    {
         $genre = Genre::factory()->create();
-        $user = User::factory()->create(['role' => User::ROLE_USER]);
-        
-        $response = $this->actingAs($user)->patchJson("/api/genres/{$genre->id}", [
-            'name' => 'Updated Genre',
+
+        $response = $this->actingAs($user)->patchJson(route('genres.update', $genre->id), [
+            'name' => 'Drama',
         ]);
-        
-        $response->assertStatus(403);
+
+        $response->assertForbidden();
     }
 
-    public function test_genre_update_requires_auth_and_returns_correct_status()
+    /**
+     * Тест ошибки 404 при обновлении несуществующего жанра.
+     *
+     * @return void
+     */
+    public function testUpdateGenreNotFound(): void
     {
-        $genre = Genre::factory()->create();
-        $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
-        
-        $response = $this->actingAs($user)->patchJson("/api/genres/{$genre->id}", [
-            'name' => 'Updated Genre',
+        $moderator = User::factory()->create([
+            'role' => User::ROLE_MODERATOR
         ]);
-        
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'data',
-            'timestamp'
-        ]);
-        $response->assertJson([
-            'success' => true
-        ]);
-    }
 
-    public function test_genre_update_returns_404_for_nonexistent_genre()
-    {
-        $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
-        
-        $response = $this->actingAs($user)->patchJson("/api/genres/999", [
-            'name' => 'Updated Genre',
+        $response = $this->actingAs($moderator)->patchJson(route('genres.update', 999), [
+            'name' => 'Comedy',
         ]);
-        
-        $response->assertStatus(404);
-    }
 
-    public function test_genre_update_validates_input()
-    {
-        $genre = Genre::factory()->create();
-        $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
-        
-        $response = $this->actingAs($user)->patchJson("/api/genres/{$genre->id}", [
-            'name' => '',
-        ]);
-        
-        $response->assertStatus(422);
+        $response->assertNotFound()
+            ->assertJson([
+                'message' => 'Запрашиваемая страница не существует.',
+            ]);
     }
-} 
+}

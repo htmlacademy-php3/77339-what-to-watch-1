@@ -3,32 +3,40 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\ErrorResponse;
+use App\Http\Responses\SuccessResponse;
+use App\Services\Auth\LoginService;
+use App\Http\Requests\Auth\LoginRequest;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class LoginController extends Controller
 {
-    public function login(Request $request): SuccessResponse|ErrorResponse
+    public function __construct(protected LoginService $loginService)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'password' => 'required|string',
-        ]);
+    }
 
-        $user = User::where('email', $request->email)->first();
+    /**
+     * Обработка входа пользователя
+     *
+     * @param  LoginRequest $request
+     * @return SuccessResponse|ErrorResponse
+     */
+    public function login(LoginRequest $request): SuccessResponse|ErrorResponse
+    {
+        try {
+            $token = $this->loginService->loginUser($request->validated());
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            return new ErrorResponse('Неверный логин или пароль', 401);
+            return $this->success(['token' => $token]);
+        } catch (UnauthorizedHttpException $e) {
+            return new ErrorResponse(
+                message: 'Переданные данные не корректны.',
+                errors: [
+                    'email' => ['Неверный email или пароль.'],
+                    'password' => ['Неверный email или пароль.']
+                ],
+                statusCode: Response::HTTP_UNAUTHORIZED
+            );
         }
-
-        $token = $user->createToken('api-token')->plainTextToken;
-
-        return new SuccessResponse([
-            'token' => $token,
-            'user' => $user,
-        ]);
     }
 }
