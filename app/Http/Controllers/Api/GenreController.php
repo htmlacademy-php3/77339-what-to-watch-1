@@ -3,42 +3,41 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\GenreResource;
 use App\Http\Responses\SuccessResponse;
-use App\Models\Genre;
+use App\Services\GenreService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class GenreController extends Controller
 {
+    public function __construct(protected GenreService $genreService)
+    {
+    }
+
     /**
      * Список жанров
      *
      * @return SuccessResponse
      */
-    public function index() : SuccessResponse
+    public function index(): SuccessResponse
     {
-        $genres = Genre::all();
-        return $this->success($genres);
+        $genres = $this->genreService->getAllGenres();
+
+        return $this->success(GenreResource::collection($genres));
     }
 
     /**
      * Обновление жанров
      *
      * @param Request $request
-     * @param Genre $genre
+     * @param $id
      *
      * @return SuccessResponse
      */
-    public function update(Request $request, Genre $genre) : SuccessResponse
+    public function update(Request $request, $id): SuccessResponse
     {
-        $this->authorize('edit-resource', $genre);
-        
-        $validated = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-        
-        $genre->update($validated);
-        
-        return $this->success($genre);
+        $genre = $this->genreService->updateGenre($id, $request->only('name'));
+
+        return $this->success(new GenreResource($genre));
     }
 }

@@ -2,20 +2,18 @@
 
 namespace App\Http\Responses;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use JsonSerializable;
+use Override;
+use Symfony\Component\HttpFoundation\Response;
 
 abstract class BaseResponse implements Responsable
 {
-    protected mixed $data;
-    protected int $statusCode;
-    protected array $headers;
-
-    public function __construct(mixed $data, int $statusCode = 200, array $headers = [])
+    public function __construct(protected mixed $data = [], public int $statusCode = Response::HTTP_OK)
     {
-        $this->data = $data;
-        $this->statusCode = $statusCode;
-        $this->headers = $headers;
     }
 
     /**
@@ -25,13 +23,10 @@ abstract class BaseResponse implements Responsable
      *
      * @return JsonResponse
      */
-    public function toResponse($request): JsonResponse
+    #[Override]
+    public function toResponse($request): JsonResponse|Response
     {
-        return new JsonResponse(
-            $this->prepareData(),
-            $this->statusCode,
-            $this->headers
-        );
+        return response()->json($this->makeResponseData(), $this->statusCode);
     }
 
     /**
@@ -39,5 +34,23 @@ abstract class BaseResponse implements Responsable
      *
      * @return array
      */
-    abstract protected function prepareData(): array;
+    protected function prepareData(): array
+    {
+        if ($this->data instanceof Arrayable) {
+            return $this->data->toArray();
+        }
+
+        if ($this->data instanceof JsonSerializable) {
+            return $this->data->jsonSerialize();
+        }
+
+        return $this->data;
+    }
+
+    /**
+     * Формирование содержимого ответа
+     *
+     * @return array|null
+     */
+    abstract protected function makeResponseData(): ?array;
 }

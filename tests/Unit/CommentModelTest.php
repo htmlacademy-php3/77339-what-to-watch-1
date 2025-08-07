@@ -4,27 +4,37 @@ namespace Tests\Unit;
 
 use App\Models\Comment;
 use App\Models\User;
-use App\Models\Film;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Faker\Factory;
+use Faker\Generator;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CommentModelTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_comment_can_be_created()
+    protected Generator $faker;
+
+    protected function setUp(): void
     {
-        $comment = Comment::factory()->create();
-        $this->assertDatabaseHas('comments', [
-            'id' => $comment->id,
-            'content' => $comment->content,
-        ]);
+        parent::setUp();
+        $this->faker = Factory::create('ru_RU');
     }
 
-    public function test_comment_relationships()
+    /**
+     * Проверяет, что у комментария есть специальное свойство для возврата имени автора
+     */
+    public function testAuthorName(): void
     {
-        $comment = Comment::factory()->create();
-        $this->assertInstanceOf(User::class, $comment->user);
-        $this->assertInstanceOf(Film::class, $comment->film);
+        $user =
+            User::factory()->create(['name' => 'Тестовый пользователь']);
+        $userComment =
+            Comment::factory()->for($user)->create();
+        $guestComment =
+            Comment::factory()->create(['user_id' => null]);
+
+        $this->assertEquals('Тестовый пользователь', $userComment->getAuthorName());
+
+        $this->assertEquals(Comment::DEFAULT_AUTHOR_NAME, $guestComment->getAuthorName());
     }
-} 
+}

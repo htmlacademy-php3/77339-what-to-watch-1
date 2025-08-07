@@ -2,26 +2,46 @@
 
 namespace App\Http\Responses;
 
-class SuccessResponse extends BaseResponse
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Override;
+
+final class SuccessResponse extends BaseResponse
 {
     /**
      * Формирование содержимого ответа
      *
-     * @return array|null
+     * @return ((mixed)[]|int|null|string)[]
      */
-    protected function makeResponseData() : ?array
+    #[Override]
+    protected function makeResponseData(): ?array
     {
-        return $this->data ? [
-            'data' => $this->prepareData(),
-        ] : null;
-    }
+        /**
+ * @var JsonResource|LengthAwarePaginator|array $items 
+*/
+        if ($this->data instanceof LengthAwarePaginator) {
+            $items =
+                $this->data->items();
 
-    protected function prepareData(): array
-    {
+            return [
+                'data' => $items,
+                'current_page' => $this->data->currentPage(),
+                'first_page_url' => $this->data->url(1),
+                'next_page_url' => $this->data->nextPageUrl(),
+                'prev_page_url' => $this->data->previousPageUrl(),
+                'per_page' => $this->data->perPage(),
+                'total' => $this->data->total(),
+            ];
+        }
+
+        if ($this->data instanceof JsonResource) {
+            return [
+                'data' => $this->data->resolve(),
+            ];
+        }
+
         return [
-            'success' => true,
-            'data' => $this->data,
-            'timestamp' => now()->toIso8601String()
+            'data' => $this->prepareData(),
         ];
     }
 }

@@ -3,73 +3,84 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Comments\StoreCommentRequest;
+use App\Http\Requests\Comments\UpdateCommentRequest;
 use App\Http\Responses\SuccessResponse;
 use App\Models\Comment;
-use App\Models\Film;
-use Illuminate\Http\Request;
+use App\Services\Comments\CommentCreateService;
+use App\Services\Comments\CommentDeleteService;
+use App\Services\Comments\CommentsFetchService;
+use App\Services\Comments\CommentUpdateService;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Gate;
 
 class CommentController extends Controller
 {
+    public function __construct(
+        protected CommentsFetchService $commentsFetchService,
+        protected CommentCreateService $commentCreateService,
+        protected CommentUpdateService $commentUpdateService,
+        protected CommentDeleteService $commentDeleteService,
+    ) {
+    }
+
     /**
      * Список комментариев к фильму
      *
-     * @param Film $film
+     * @param int $film_id
      *
      * @return SuccessResponse
      */
-    public function index(Film $id) : SuccessResponse
+    public function index(int $film_id): SuccessResponse
     {
-        $comments = $id->comments()->with('user')->get();
-        
-        return $this->success($comments);
+        $comments = $this->commentsFetchService->getFilmComments($film_id);
+
+        return $this->success($comments, 201);
     }
 
     /**
      * Добавление комментария
      *
-     * @param Request $request
-     * @param Film $film
+     * @param StoreCommentRequest $request
+     * @param $filmId
      *
      * @return SuccessResponse
      */
-    public function store(Request $request, Film $id) : SuccessResponse
+    public function store(StoreCommentRequest $request, $filmId): SuccessResponse
     {
-        $validated = $request->validate([
-            'content' => 'required|string|max:1000',
-            'author' => 'required|string|max:255',
-            'rate' => 'nullable|integer|between:1,10',
-            'comment_id' => 'nullable|exists:comments,id',
-        ]);
-        
-        $validated['user_id'] = $request->user()->id;
-        $validated['film_id'] = $id->id;
-        
-        $comment = Comment::create($validated);
-        
-        return $this->success($comment);
+        $comment = $this->commentCreateService->createComment(
+            [
+            'user_id' => auth()->id(),
+            'film_id' => $filmId,
+            'text' => $request->text,
+            'rate' => $request->rate,
+            ]
+        );
+
+        return $this->success($comment, 201);
     }
 
     /**
-     * Изменение комментария
+     * Редактирование комментария
      *
-     * @param Request $request
-     * @param Comment $comment
+     * @param UpdateCommentRequest $request
+     * @param Comment              $comment
      *
      * @return SuccessResponse
+     * @throws AuthorizationException
      */
-    public function update(Request $request, Comment $comment) : SuccessResponse
+    public function update(UpdateCommentRequest $request, Comment $comment): SuccessResponse
     {
-        $this->authorize('edit-resource', $comment);
-        
-        $validated = $request->validate([
-            'content' => 'sometimes|required|string|max:1000',
-            'author' => 'sometimes|required|string|max:255',
-            'rate' => 'sometimes|nullable|integer|between:1,10',
-        ]);
-        
-        $comment->update($validated);
-        
-        return $this->success($comment);
+        Gate::authorize('update-comment', $comment);
+
+        $updatedComment = $this->commentUpdateService->updateComment($comment, $request->validated());
+
+        return $this->success(
+            [
+            'text' => $updatedComment->text,
+            'rate' => $updatedComment->rate,
+            ], 200
+        );
     }
 
     /**
@@ -78,13 +89,18 @@ class CommentController extends Controller
      * @param Comment $comment
      *
      * @return SuccessResponse
+     * @throws AuthorizationException
      */
-    public function destroy(Comment $comment) : SuccessResponse
+    public function destroy(Comment $comment): SuccessResponse
     {
-        $this->authorize('edit-resource', $comment);
-        
-        $comment->delete();
-        
-        return $this->success(['message' => 'Comment deleted successfully']);
+        Gate::authorize('delete-comment', $comment);
+
+        if (!auth()->user()->isModerator() && $comment->replies()->exists()) {
+            throw new AuthorizationException('Нельзя удалить комментарий с ответами');
+        }
+
+        $this->commentDeleteService->deleteComment($comment);
+
+        return $this->success([], 204);
     }
 }

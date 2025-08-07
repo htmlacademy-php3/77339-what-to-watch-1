@@ -3,42 +3,104 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\FilmListResource;
+use App\Http\Resources\FilmResource;
+use App\Http\Responses\ErrorResponse;
 use App\Http\Responses\SuccessResponse;
+use App\Models\FavoriteFilm;
+use App\Models\Film;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 
 class FavoriteController extends Controller
 {
     /**
      * Список фильмов в избранном
-     *
-     * @return SuccessResponse
      */
-    public function index() : SuccessResponse
+    public function index(): SuccessResponse
     {
-        return $this->success([]);
+        $userId = auth()->id();
+        $perPage = 8;
+
+        /**
+         * @var LengthAwarePaginator<FavoriteFilm> $favorites
+         */
+        $favorites = FavoriteFilm::where('user_id', $userId)
+            ->with(
+                ['film' => function ($query) {
+                    $query->with(
+                        [
+                        'genres:genres.id,genres.name',
+                        'actors:actors.id,actors.name',
+                        'directors:directors.id,directors.name',
+                        ]
+                    );
+                }]
+            )
+        ->orderBy('created_at', 'desc')
+        ->paginate($perPage);
+
+        $items = collect($favorites->items());
+        $formatted = $items->map(
+            function ($favorite) {
+                $film = $favorite->film;
+                $film->is_favorite = true;
+                $film->added_at = $favorite->created_at->format('Y-m-d H:i:s');
+                return new filmResource($film);
+            }
+        );
+
+        return $this->success(FilmListResource::collection($formatted));
     }
 
     /**
      * Добавление фильма в избранное
      *
-     * @param Request $request
+     * @param $filmId
      *
-     * @return SuccessResponse
+     * @return SuccessResponse|ErrorResponse
      */
-    public function store(Request $request) : SuccessResponse
+    public function store($filmId): SuccessResponse|ErrorResponse
     {
-        return $this->success([]);
+        $usrId = auth()->id();
+
+        if (!Film::where('id', $filmId)->exists()) {
+            return $this->error('Фильм не найден', [], 404);
+        }
+
+        if (FavoriteFilm::where('user_id', $usrId)->where('film_id', $filmId)->exists()) {
+            return $this->success(['message' => "Фильм уже в избранном"], 200);
+        }
+
+        FavoriteFilm::create(
+            [
+            'user_id' => $usrId,
+            'film_id' => $filmId,
+            ]
+        );
+
+        return $this->success(['message' => "Фильм успешно добавлен в избранное!"], 201);
     }
 
     /**
      * Удаление из избранного
      *
-     * @param Request $request
+     * @param $filmId
      *
-     * @return SuccessResponse
+     * @return SuccessResponse|ErrorResponse
      */
-    public function destroy(Request $request) : SuccessResponse
+    public function destroy($filmId): SuccessResponse|ErrorResponse
     {
-        return $this->success([]);
+        $userId = auth()->id();
+
+        $deleted = FavoriteFilm::where('user_id', $userId)
+            ->where('film_id', $filmId)
+            ->delete();
+
+        if ($deleted) {
+            return $this->success(['message' => "Фильм удален из избранного"], 200);
+        }
+
+        return $this->error('Фильм не найден в избранном', [], 404);
     }
 }
