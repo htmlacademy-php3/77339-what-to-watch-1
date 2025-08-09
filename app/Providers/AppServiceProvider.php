@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
+/**
+ * @psalm-suppress UnusedClass
+ * Класс используется Laravel для:
+ *  - Регистрации связей в контейнере
+ *  - Запуска начальной загрузки сервисов
+ *  - Регистрации middleware, роутов, команд
+ */
 class AppServiceProvider extends ServiceProvider
 {
     /**

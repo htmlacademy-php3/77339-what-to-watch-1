@@ -12,6 +12,10 @@ use App\Interfaces\FilmsOmdbRepositoryInterface;
  */
 class OmdbFilmsService
 {
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     * Laravel DI автоматически вызывает этот конструктор
+     */
     public function __construct(protected FilmsOmdbRepositoryInterface $repository)
     {
     }

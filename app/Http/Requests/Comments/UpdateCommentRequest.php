@@ -8,10 +8,14 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 use Override;
 
+/**
+ * @psalm-suppress PossiblyUnusedMethod
+ */
 final class UpdateCommentRequest extends FormRequest
 {
     /**
      * @return         bool
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function authorize(): bool
     {
@@ -20,6 +24,7 @@ final class UpdateCommentRequest extends FormRequest
 
     /**
      * @return         array
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function rules(): array
     {

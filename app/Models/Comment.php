@@ -52,6 +52,8 @@ use Illuminate\Support\Carbon;
  * @method        static CommentFactory factory($count = null, $state = [])
  * @method        static Builder<static>|Comment whereText($value)
  * @mixin         Eloquent
+ *
+ * @psalm-suppress MissingTemplateParam
  */
 class Comment extends Model
 {
@@ -81,6 +83,7 @@ class Comment extends Model
      * Родительский комментарий
      *
      * @return         BelongsTo
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function parentComment(): BelongsTo
     {
@@ -91,6 +94,7 @@ class Comment extends Model
      * Связь с фильмом, к которому относится комментарий.
      *
      * @return         BelongsTo
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function film(): BelongsTo
     {
@@ -101,6 +105,7 @@ class Comment extends Model
      * Связь с пользователем, который оставил комментарий.
      *
      * @return         BelongsTo
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function user(): BelongsTo
     {
@@ -119,6 +124,7 @@ class Comment extends Model
      * Получить имя автора комментария
      *
      * @return         string
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function getAuthorName(): string
     {

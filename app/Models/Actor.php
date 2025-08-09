@@ -33,6 +33,8 @@ use Illuminate\Support\Carbon;
  * @method        static Model|static firstOrCreate(array $attributes, array $values = [])
  * @method        static ActorFactory factory($count = null, $state = [])
  * @mixin         Eloquent
+ *
+ * @psalm-suppress MissingTemplateParam
  */
 class Actor extends Model
 {
@@ -42,6 +44,7 @@ class Actor extends Model
 
     /**
      * @return         BelongsToMany
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function films(): BelongsToMany
     {

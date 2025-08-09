@@ -99,10 +99,19 @@ final class FilmRepository
      * @param  int $filmId
      * @param  int $limit
      * @return Collection
+     *
+     * @psalm-return Collection<int, Film>
      */
     public function getSimilarFilmsByGenres(int $filmId, int $limit = 4): Collection
     {
         $film = $this->findOrFail($filmId);
+
+        /**
+ * @var Builder<Film> $query 
+*/
+        /**
+ * @psalm-suppress UndefinedMagicMethod 
+*/
         $query = Film::with(['genres'])
             ->whereHas(
                 'genres', function ($query) use ($film) {

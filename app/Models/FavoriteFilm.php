@@ -45,6 +45,8 @@ use Illuminate\Support\Carbon;
  * @method        static Builder<static>|Film with($relations)
  *
  * @mixin Eloquent
+ *
+ * @psalm-suppress MissingTemplateParam
  */
 class FavoriteFilm extends Model
 {
@@ -64,6 +66,7 @@ class FavoriteFilm extends Model
 
     /**
      * @return         BelongsTo
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function film(): BelongsTo
     {
@@ -72,6 +75,7 @@ class FavoriteFilm extends Model
 
     /**
      * @return         BelongsTo
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function user(): BelongsTo
     {

@@ -21,6 +21,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+/**
+ * @psalm-suppress UnusedClass
+ */
 class FilmController extends Controller
 {
     public function __construct(

@@ -53,11 +53,13 @@ use Laravel\Sanctum\PersonalAccessToken;
  * @mixin Eloquent
  * @mixin HasApiTokens<User>
  * @mixin HasFactory<User>
+ *
+ * @psalm-suppress MissingTemplateParam
  */
 class User extends Authenticatable
 {
-    use HasApiTokens;
-    use HasFactory;
+    use HasApiTokens; // <--- generic param: App\Models\User
+    use HasFactory;   // <--- generic param: App\Models\User
     use Notifiable;
 
     public const int ROLE_USER = 1;
@@ -87,6 +89,7 @@ class User extends Authenticatable
 
     /**
      * @return         HasMany<Comment>
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function comments(): HasMany
     {

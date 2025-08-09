@@ -7,6 +7,10 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class FilmListService
 {
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     * Laravel DI автоматически вызывает этот конструктор
+     */
     public function __construct(
         protected FilmsListRepository $filmsListRepository,
         protected FavoriteFilmCheckService $favoriteFilmCheckService
@@ -16,10 +20,17 @@ class FilmListService
     /**
      *  Возвращает список фильмов с поддержкой фильтрации и пагинации.
      *
-     * @param array
-     * @param int
+     *  Доступные фильтры:
+     *  - genre: фильтрация по жанру
+     *  - status: фильтрация по статусу (только для модератора, по умолчанию ready)
+     *  - order_by: поле сортировки (по умолчанию — released, дата выхода фильма; возможна
+     *    сортировка по rating, рейтингу)
+     *  - order_to: направление сортировки ('asc' или 'desc', по умолчанию 'desc')
      *
-     * @return LengthAwarePaginator
+     * @param array $filters Массив фильтров
+     * @param int   $perPage Количество фильмов на страницу
+     *
+     * @return LengthAwarePaginator Список фильмов с пагинацией
      */
     public function getFilmList(array $filters = [], ?int $userId = null, int $perPage = 8): LengthAwarePaginator
     {

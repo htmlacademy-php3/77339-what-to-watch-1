@@ -1,216 +1,280 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Films;
 
-use App\Models\Film;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Http\Resources\FilmResource;
+use App\Models\Film;
 
 class FilmTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_film_list_returns_correct_structure_and_status()
+    /**
+     * Тестирование обработки случая, когда фильм не найден.
+     *
+     * @return void
+     */
+    
+    public function testReturns404WhenFilmNotFound(): void
     {
-        Film::factory()->count(3)->create();
-        $user = User::factory()->create();
-        
-        $response = $this->actingAs($user)->getJson('/api/films');
-        
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'data',
-            'timestamp'
-        ]);
-        $response->assertJson([
-            'success' => true
+        $response = $this->getJson(route('films.show', ['id' => 999]));
+
+        $response->assertNotFound()
+        ->assertJson([
+            'message' => 'Запрашиваемая страница не существует.',
         ]);
     }
 
-    public function test_film_list_requires_authentication()
+    /**
+     * Тест успешного добавления фильма модератором.
+     * 
+     * @return void
+     */
+
+    public function testStoreFilm(): void
     {
-        $response = $this->getJson('/api/films');
-        
-        $response->assertStatus(401);
+        $moderator =
+            User::factory()->create([
+                'role' => User::ROLE_MODERATOR,
+            ]);
+
+        $response =
+            $this->actingAs($moderator)->postJson(route('films.store'), [
+                'imdb_id' => 'tt1234567',
+            ]);
+
+        $response->assertCreated()->assertJsonStructure([
+                'data' => [
+                    "id",
+                    "name",
+                    "poster_image",
+                    "preview_image",
+                    "background_image",
+                    "background_color",
+                    "video_link",
+                    "preview_video_link",
+                    "description",
+                    "rating",
+                    "scores_count",
+                    "director",
+                    "starring",
+                    "run_time",
+                    "genre",
+                    "released",
+                    "is_favorite",
+                    "is_promo",
+                ]
+            ]);
     }
 
-    public function test_film_show_returns_correct_structure_and_status()
-    {
-        $id = Film::factory()->create();
-        $user = User::factory()->create();
+    /**
+     * Тест ошибки 403 при попытке добавить фильм обычным пользователем.
+     * 
+     * @return void
+     */
 
-        $response = $this->actingAs($user)->getJson("/api/films/{$id->id}");
-        
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'data',
-            'timestamp'
-        ]);
-        $response->assertJson([
-            'success' => true
-        ]);
+    public function testStoreFilmAsUser(): void
+    {
+        $user =
+            User::factory()->create();
+
+        $response =
+            $this->actingAs($user)->postJson(route('films.store'), [
+                'imdb_id' => 'tt1234567',
+            ]);
+
+        $response->assertForbidden();
     }
 
-    public function test_film_show_returns_404_for_nonexistent_film()
-    {
-        $user = User::factory()->create();
-        
-        $response = $this->actingAs($user)->getJson("/api/films/999");
-        
-        $response->assertStatus(404);
-    }
+    /**
+     * Тестирование получения детальной информации о фильме.
+     * 
+     * @return void
+     */
 
-    public function test_film_create_returns_201_and_structure()
-    {
-        $user = User::factory()->create();
-        $filmData = Film::factory()->make()->toArray();
-        
-        $response = $this->actingAs($user)->postJson('/api/films', $filmData);
-        
-        $response->assertStatus(201);
-        $response->assertJsonStructure([
-            'success',
-            'data',
-            'timestamp'
-        ]);
-        $response->assertJson([
-            'success' => true
-        ]);
-    }
-
-    public function test_film_create_requires_authentication()
-    {
-        $filmData = Film::factory()->make()->toArray();
-        
-        $response = $this->postJson('/api/films', $filmData);
-        
-        $response->assertStatus(401);
-    }
-
-    public function test_film_create_validates_required_fields()
-    {
-        $user = User::factory()->create();
-        
-        $response = $this->actingAs($user)->postJson('/api/films', []);
-        
-        $response->assertStatus(422);
-    }
-
-    public function test_film_update_requires_moderator_role()
+    public function testReturnsFilmDetails(): void
     {
         $film = Film::factory()->create();
-        $user = User::factory()->create(['role' => User::ROLE_USER]);
-        
-        $response = $this->actingAs($user)->patchJson("/api/films/{$film->id}", [
-            'title' => 'Updated Title',
-        ]);
-        
-        $response->assertStatus(403);
+
+        $response = $this->getJson(route('films.show', $film->id));
+
+        $response->assertOk()
+            ->assertJson([
+                'data' => new FilmResource($film)->response()->getData(true)['data'],
+            ]);
     }
 
-    public function test_film_update_requires_auth_and_returns_correct_status()
+    /**
+     * Тестирование получения списка фильмов с пагинацией.
+     * 
+     * @return void
+     */
+
+    public function testReturnsPaginatedFilmList(): void
+    {
+        Film::factory()->count(20)->create();
+
+        $response = $this->getJson(route('films.index'));
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'poster_image',
+                        'preview_image',
+                        'preview_video_link',
+                        'genre',
+                        'released'
+                    ]
+                ]
+            ])
+            ->assertJsonCount(8, 'data');
+    }
+
+    /**
+     * Тест успешного обновления фильма модератором.
+     *
+     * @return void
+     */
+    
+    public function testUpdateFilm(): void
+    {
+        $moderator = User::factory()->create([
+            'role' => User::ROLE_MODERATOR,
+        ]);
+        $film = Film::factory()->create();
+
+        $response = $this->actingAs($moderator)->patchJson(route('films.update', $film->id), [
+            'name' => 'Updated Title',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['data']);
+    }
+
+    /**
+     * Тест ошибки 401 при попытке обновить фильм без авторизации.
+     * 
+     * @return void
+     */
+
+    public function testUpdateFilmUnauthenticated(): void
     {
         $film = Film::factory()->create();
-        $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
-        
-        $response = $this->actingAs($user)->patchJson("/api/films/{$film->id}", [
-            'title' => 'Updated Title',
+
+        $response = $this->patchJson(route('films.update', $film->id), [
+            'name' => 'No Access',
         ]);
-        
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'data',
-            'timestamp'
-        ]);
-        $response->assertJson([
-            'success' => true
-        ]);
+
+        $response->assertUnauthorized();
     }
 
-    public function test_film_update_returns_404_for_nonexistent_film()
-    {
-        $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
-        
-        $response = $this->actingAs($user)->patchJson("/api/films/999", [
-            'title' => 'Updated Title',
-        ]);
-        
-        $response->assertStatus(404);
-    }
+    /**
+     * Тест ошибки 403 при попытке обновить фильм обычным пользователем.
+     * 
+     * @return void
+     */
 
-    public function test_film_delete_requires_moderator_role()
-    {
-        $film = Film::factory()->create();
-        $user = User::factory()->create(['role' => User::ROLE_USER]);
-        
-        $response = $this->actingAs($user)->deleteJson("/api/films/{$film->id}");
-        
-        $response->assertStatus(403);
-    }
-
-    public function test_film_delete_requires_auth_and_returns_correct_status()
-    {
-        $film = Film::factory()->create();
-        $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
-        
-        $response = $this->actingAs($user)->deleteJson("/api/films/{$film->id}");
-        
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'data',
-            'timestamp'
-        ]);
-        $response->assertJson([
-            'success' => true
-        ]);
-    }
-
-    public function test_film_delete_returns_404_for_nonexistent_film()
-    {
-        $user = User::factory()->create(['role' => User::ROLE_MODERATOR]);
-        
-        $response = $this->actingAs($user)->deleteJson("/api/films/999");
-        
-        $response->assertStatus(404);
-    }
-
-    public function test_film_similar_returns_correct_structure()
-    {
-        $film = Film::factory()->create();
-        $user = User::factory()->create();
-        
-        $response = $this->actingAs($user)->getJson("/api/films/{$film->id}/similar");
-        
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'data',
-            'timestamp'
-        ]);
-        $response->assertJson([
-            'success' => true
-        ]);
-    }
-
-    public function test_film_promo_returns_correct_structure()
+    public function testUpdateFilmAsUser(): void
     {
         $user = User::factory()->create();
-        
-        $response = $this->actingAs($user)->getJson("/api/promo");
-        
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'data',
-            'timestamp'
+        $film = Film::factory()->create();
+
+        $response = $this->actingAs($user)->patchJson(route('films.update', $film->id), [
+            'name' => 'Forbidden',
         ]);
-        $response->assertJson([
-            'success' => true
-        ]);
+
+        $response->assertForbidden();
     }
-} 
+
+    /**
+     * Тест получения текущего промо-фильма.
+     *
+     * @return void
+     */
+
+    public function testShowPromo(): void
+    {
+        $promoFilm = Film::factory()->create(['is_promo' => true]);
+        $response = $this->getJson(route('promo.show'));
+
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    'id' => $promoFilm->id,
+                    'is_promo' => true
+                ]
+            ]);
+    }
+
+    /**
+     * Тест создания промо-фильма модератором.
+     *
+     * @return void
+     */
+
+    public function testCreatePromo(): void
+    {
+        $moderator = User::factory()->create([
+            'role' => User::ROLE_MODERATOR,
+        ]);
+        $film = Film::factory()->create();
+
+        $response = $this->actingAs($moderator)->postJson(route('promo.create', $film->id));
+
+        $response->assertOk()
+            ->assertJsonStructure(['data']);
+    }
+
+    /**
+     * Тест ошибки 403 при попытке создать промо-фильм обычным пользователем.
+     * 
+     * @return void
+     */
+
+    public function testCreatePromoAsUser(): void
+    {
+        $user = User::factory()->create();
+        $film = Film::factory()->create();
+
+        $response = $this->actingAs($user)->postJson(route('promo.create', $film->id));
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * Тест ошибки 401 при попытке создать промо-фильм без авторизации.
+     * 
+     * @return void
+     */
+
+    public function testCreatePromoUnauthenticated(): void
+    {
+        $film = Film::factory()->create();
+
+        $response = $this->postJson(route('promo.create', $film->id));
+
+        $response->assertUnauthorized();
+    }
+
+    /**
+     * Тест получения списка похожих фильмов.
+     *
+     * @return void
+     */
+
+    public function testSimilarFilms(): void
+    {
+        $film = Film::factory()->create();
+
+        $response = $this->getJson(route('films.similar', $film->id));
+
+        $response->assertOk()
+            ->assertJsonStructure(['data']);
+    }
+}

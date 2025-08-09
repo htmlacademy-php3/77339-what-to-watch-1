@@ -2,29 +2,32 @@
 
 namespace Database\Factories;
 
-use App\Models\Genre;
+use App\Models\FavoriteFilm;
+use App\Models\Film;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Genre>
+ * @extends Factory<FavoriteFilm>
  *
  * @psalm-suppress UnusedClass
  * Класс используется через вызов в DatabaseSeeder
  */
-final class GenreFactory extends Factory
+final class FavoriteFilmFactory extends Factory
 {
     /**
      * Define the model's default state.
      *
-     * @return string[]
+     * @return Factory[]
      *
-     * @psalm-return array{name: string}
+     * @psalm-return array{user_id: Factory, film_id: Factory}
      */
     #[\Override]
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->word,
+            'user_id' => User::factory(),
+            'film_id' => Film::factory(),
         ];
     }
 }

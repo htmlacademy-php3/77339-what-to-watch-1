@@ -9,6 +9,8 @@ use Override;
 
 /**
  * @mixin Genre
+ *
+ * Ресурс жанров для API-ответов.
  */
 class GenreResource extends JsonResource
 {
@@ -16,6 +18,8 @@ class GenreResource extends JsonResource
      * Преобразует ресурс в массив для JSON-ответа.
      *
      * @return (int|string)[]
+     *
+     * @psalm-return array{id: int, name: string}
      */
     #[Override]
     public function toArray(Request $request): array

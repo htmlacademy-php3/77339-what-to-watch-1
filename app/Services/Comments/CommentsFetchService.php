@@ -11,6 +11,10 @@ use Illuminate\Support\Collection;
  */
 class CommentsFetchService
 {
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     * Laravel DI автоматически вызывает этот конструктор
+     */
     public function __construct(protected CommentsFetchRepository $commentsFetchRepository)
     {
     }
