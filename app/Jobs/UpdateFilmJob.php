@@ -20,7 +20,15 @@ class UpdateFilmJob implements ShouldQueue
     use SerializesModels;
 
     private string $imdbId;
+    /**
+     * @psalm-suppress UnusedProperty 
+     */
     public readonly Film $film;
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     * Laravel DI автоматически вызывает этот конструктор
+     */
     public function __construct(string $imdbId, Film $film)
     {
         $this->imdbId = $imdbId;
@@ -35,6 +43,10 @@ class UpdateFilmJob implements ShouldQueue
     public function handle(OmdbFilmsService $service): void
     {
         $data = $service->getFilm($this->imdbId);
+
+        /**
+ * @psalm-suppress UndefinedMagicMethod 
+*/
         $film = Film::updateOrCreate(
             ['imdb_id' => $data['imdbID'] ?? null],
             [

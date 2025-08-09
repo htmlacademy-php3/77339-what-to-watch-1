@@ -21,6 +21,10 @@ class FilmsOmdbRepository implements FilmsOmdbRepositoryInterface
     private RequestFactoryInterface $httpFactory;
     private ClientInterface $httpClient;
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     * Laravel DI автоматически вызывает этот конструктор
+     */
     public function __construct(
         RequestFactoryInterface $httpFactory,
         ClientInterface $httpClient

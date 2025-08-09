@@ -6,12 +6,19 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Override;
 
+/**
+ * Класс запроса для создания нового фильма.
+ *
+ * Валидирует данные, которые приходят при создании фильма через API.
+ */
 class StoreFilmRequest extends FormRequest
 {
     /**
      * Разрешает всем пользователям делать данный запрос.
+     * Правила доступа регулируются миддлварами и гейтами в роутах
      *
      * @return bool
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function authorize(): bool
     {
@@ -22,6 +29,7 @@ class StoreFilmRequest extends FormRequest
      * Правила валидации входящих данных.
      *
      * @return array<string, ValidationRule|array|string>
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function rules(): array
     {

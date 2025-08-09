@@ -12,6 +12,10 @@ use Throwable;
  */
 class FilmCreateService
 {
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     * Laravel DI автоматически вызывает этот конструктор
+     */
     public function __construct(protected FilmRepository $repository)
     {
 

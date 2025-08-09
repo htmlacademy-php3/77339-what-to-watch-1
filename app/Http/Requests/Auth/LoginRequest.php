@@ -8,6 +8,7 @@ final class LoginRequest extends FormRequest
 {
     /**
      * @return         bool
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function authorize(): bool
     {
@@ -16,6 +17,7 @@ final class LoginRequest extends FormRequest
 
     /**
      * @return         array[]
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function rules(): array
     {

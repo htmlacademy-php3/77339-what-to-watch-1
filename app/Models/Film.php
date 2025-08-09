@@ -86,6 +86,8 @@ use Illuminate\Support\Carbon;
  * @method        static self findOrFail(mixed $id, array $columns = ['*'])
  *
  * @mixin Eloquent
+ *
+ * @psalm-suppress MissingTemplateParam
  */
 class Film extends Model
 {
@@ -94,6 +96,10 @@ class Film extends Model
     public const string STATUS_PENDING = 'pending';
     public const string STATUS_MODERATE = 'moderate';
     public const string STATUS_READY = 'ready';
+
+    /**
+     * @psalm-suppress PossiblyUnusedProperty
+     */
     public bool $is_favorite = false;
 
     protected $table = 'films';
@@ -137,6 +143,8 @@ class Film extends Model
      * Получить все записи об избранных фильмах, в которых указан этот фильм.
      *
      * @return HasMany
+     *
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function favoriteFilms(): HasMany
     {
@@ -147,6 +155,7 @@ class Film extends Model
      * Получить всех пользователей, добавивших фильм в избранное.
      *
      * @return         BelongsToMany
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function usersWhoFavorited(): BelongsToMany
     {
@@ -187,6 +196,7 @@ class Film extends Model
      * Получить среднюю оценку фильма на основе пользовательских комментариев.
      *
      * @return         float|null
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function getRatingAttribute(): ?float
     {
@@ -198,6 +208,8 @@ class Film extends Model
 
     /**
      * Отношение с пользователями, добавившими фильм в избранное
+     *
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function favorites(): BelongsToMany
     {

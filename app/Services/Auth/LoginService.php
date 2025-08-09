@@ -11,7 +11,12 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
  * Сервис входа пользователя в систему
  */
 class LoginService
-{    public function __construct(protected UserRepository $userRepository)
+{
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     * Laravel DI автоматически вызывает этот конструктор
+     */
+    public function __construct(protected UserRepository $userRepository)
     {
 
     }

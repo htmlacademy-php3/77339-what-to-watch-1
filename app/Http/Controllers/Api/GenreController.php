@@ -8,6 +8,9 @@ use App\Http\Responses\SuccessResponse;
 use App\Services\GenreService;
 use Illuminate\Http\Request;
 
+/**
+ * @psalm-suppress UnusedClass
+ */
 class GenreController extends Controller
 {
     public function __construct(protected GenreService $genreService)

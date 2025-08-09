@@ -33,6 +33,8 @@ use Illuminate\Support\Carbon;
  * @method        static Model|static firstOrCreate(array $attributes, array $values = [])
  * @method        static GenreFactory factory($count = null, $state = [])
  * @mixin         Eloquent
+ *
+ * @psalm-suppress MissingTemplateParam
  */
 class Genre extends Model
 {
@@ -44,6 +46,10 @@ class Genre extends Model
         'name'
     ];
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     * Laravel использует динамически
+     */
     public function films(): BelongsToMany
     {
         return $this->belongsToMany(Film::class, 'genre_film');

@@ -13,22 +13,27 @@ return new class extends Migration
     {
         Schema::create('films', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->string('year')->nullable();
-            $table->string('description')->nullable();
-            $table->string('director')->nullable();
-            $table->text('actors')->nullable();
-            $table->string('duration')->nullable();
-            $table->decimal('imdb_rating', 3, 1)->nullable();
+            $table->string('name')->nullable();
+            $table->string('status')->default('ready');
+            $table->string('released')->nullable();
+            $table->text('description')->nullable();
+            $table->string('run_time')->nullable();
+            $table->decimal('rating', 3, 1)->nullable();
             $table->integer('imdb_votes')->nullable();
             $table->string('imdb_id')->unique()->nullable();
-            $table->string('poster_url')->nullable();
-            $table->string('preview_url')->nullable();
+            $table->string('poster_image')->nullable();
+            $table->string('preview_image')->nullable();
+            $table->string('background_image')->nullable();
             $table->string('background_color')->nullable();
-            $table->string('cover_url')->nullable();
-            $table->string('video_url')->nullable();
-            $table->string('video_preview_url')->nullable();
+            $table->string('video_link')->nullable();
+            $table->string('preview_video_link')->nullable();
+            $table->boolean('is_promo')->default(false)
+                ->comment('Флаг промо-фильма');
             $table->timestamps();
+        });
+
+        Schema::table('films', function (Blueprint $table) {
+            $table->index('is_promo');
         });
     }
 

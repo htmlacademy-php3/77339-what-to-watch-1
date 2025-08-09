@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('genre_films', function (Blueprint $table) {
+        Schema::create('genre_film', function (Blueprint $table) {
             $table->foreignId('film_id')->constrained()->cascadeOnDelete();
             $table->foreignId('genre_id')->constrained()->cascadeOnDelete();
             $table->primary(['film_id', 'genre_id']);

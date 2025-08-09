@@ -10,6 +10,11 @@ use App\Http\Requests\Auth\LoginRequest;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
+/**
+ * Контроллер входа пользователя в систему
+ *
+ * @psalm-suppress UnusedClass
+ */
 class LoginController extends Controller
 {
     public function __construct(protected LoginService $loginService)

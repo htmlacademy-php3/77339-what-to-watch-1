@@ -7,6 +7,11 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Responses\SuccessResponse;
 use App\Services\Auth\RegisterService;
 
+/**
+ * Контроллер регистрации пользователя
+ *
+ * @psalm-suppress UnusedClass
+ */
 class RegisterController extends Controller
 {
     public function __construct(protected RegisterService $registerService)

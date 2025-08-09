@@ -8,13 +8,17 @@ use Illuminate\Validation\Rule;
 
 /**
  * Класс запроса для редактирования фильма.
+ *
+ * Валидирует данные, которые приходят при редактировании фильма через API.
  */
 class UpdateFilmRequest extends FormRequest
 {
     /**
      * Разрешает всем пользователям делать данный запрос.
+     * Правила доступа регулируются миддлварами и гейтами в роутах
      *
      * @return bool
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function authorize(): bool
     {
@@ -25,6 +29,7 @@ class UpdateFilmRequest extends FormRequest
      * Правила валидации входящих данных.
      *
      * @return array<string, ValidationRule|array|string>
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function rules(): array
     {

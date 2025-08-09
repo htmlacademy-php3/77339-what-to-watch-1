@@ -10,6 +10,10 @@ use App\Repositories\Films\FilmDetailsRepository;
  */
 class FilmDetailsService
 {
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     * Laravel DI автоматически вызывает этот конструктор
+     */
     public function __construct(protected FilmDetailsRepository $filmDetailsRepository)
     {
 

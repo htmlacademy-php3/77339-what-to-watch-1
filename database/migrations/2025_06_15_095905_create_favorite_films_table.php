@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('film_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+
+            $table->unique(['user_id', 'film_id']);
         });
     }
 
@@ -27,4 +29,3 @@ return new class extends Migration
         Schema::dropIfExists('favorites_films');
     }
 };
-

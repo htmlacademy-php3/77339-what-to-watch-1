@@ -10,6 +10,9 @@ use App\Http\Responses\SuccessResponse;
 use App\Repositories\Users\UserRepository;
 use Auth;
 
+/**
+ * @psalm-suppress UnusedClass
+ */
 class UserController extends Controller
 {
     public function __construct(private readonly UserRepository $userRepository)

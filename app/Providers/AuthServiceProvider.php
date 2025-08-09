@@ -8,6 +8,14 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Override;
 
+
+/**
+ * @psalm-suppress UnusedClass
+ * Класс используется Laravel для:
+ *  - Регистрации связей в контейнере
+ *  - Запуска начальной загрузки сервисов
+ *  - Регистрации middleware, роутов, команд
+ */
 class AuthServiceProvider extends ServiceProvider
 {
     /**
